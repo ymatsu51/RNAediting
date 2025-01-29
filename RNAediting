@@ -1,0 +1,31 @@
+# Install necessary packages
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("ShortRead", force = TRUE)
+
+library(ShortRead)
+fastq_file <- "path/to/your/fastq_file.fastq"
+fq <- readFastq(fastq_file)
+library(Biostrings)
+
+# Define the patterns to search as a list
+patterns <- c("TAAGACAAGGGATC", "TAAGACAAGGGGATC", "TAAGACAAGGGGGATC", "TAAGACAAGGGGGGATC")
+
+# Initialize a list to store the counts for each pattern
+pattern_counts <- list()
+
+# Define a function to count sequences that contain exactly one occurrence of the pattern
+count_single_match <- function(sequence, pattern) {
+  matches <- gregexpr(pattern, as.character(sequence))
+  match_counts <- sapply(matches, function(match) sum(match != -1))
+  return(sum(match_counts == 1))
+}
+
+# Perform counting for each pattern
+for (pattern in patterns) {
+  pattern_counts[[pattern]] <- sum(sapply(sread(fq), count_single_match, pattern = pattern))
+}
+
+# Display the results
+pattern_counts
